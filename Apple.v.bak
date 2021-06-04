@@ -1,0 +1,30 @@
+module Apple(clk1,good_collision,apple,start,xCount,yCount,clk2);
+input clk1, clk2, good_collision, start, xCount, yCount;
+output reg apple;
+reg [9:0] appleX;
+reg [8:0] appleY;
+reg apple_inX;
+reg apple_inY;
+wire [9:0]rand_X;
+wire [8:0]rand_Y;
+wire [9:0] xCount;
+wire [9:0] yCount;
+randompoint(clk1,clk2,rand_X, rand_Y);
+always @ (posedge clk1)begin
+   if (good_collision)begin
+	    appleX = rand_X;
+		 appleY = rand_Y;
+	end
+	if (start)begin
+	    appleX = rand_X;
+		 appleY = rand_Y;
+	end
+end
+if ( x_pos == appleX && y_pos == appleY)begin
+   apple = 1;
+end
+else begin
+   apple = 0;
+end
+endmodule
+if ( x_head_snake )
