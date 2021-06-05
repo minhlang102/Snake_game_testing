@@ -61,7 +61,7 @@ wire clk;
 wire rst;
 
 assign clk = CLOCK_50;
-assign rst = ~DLY_RST;
+assign rst = (vld_apple && bite_self)? 1 : ~DLY_RST;
 
 Reset_Delay r0	(
     .iCLK(clk),
@@ -145,7 +145,7 @@ move
 	)
 mv(
 	.clk				(clk),
-	.DLY_RST			(DLY_RST),
+	.rst				(rst),
 	.vld				(vld),
 	.way				(way),
 	.x					(x_logic),
@@ -153,7 +153,8 @@ mv(
 	.length			(length),
 	.pixel_done		(pixel_done),
 	.is_end			(is_end),
-	.is_queue		(is_queue)
+	.is_queue		(is_queue),
+	.bite_self		(bite_self)
 	);
 	
 // Eat apple
@@ -219,7 +220,7 @@ pixel
     );
 
 always @ (posedge clk) begin
-	if (!DLY_RST) begin
+	if (rst) begin
 		vld_apple <= 0;
 	end
 	if (pixel_done && is_end) begin
