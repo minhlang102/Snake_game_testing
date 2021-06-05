@@ -39,12 +39,12 @@ output [7:0] VGA_R;
 output       VGA_SYNC_N;
 output       VGA_VS;
 
-wire		VGA_CTRL_CLK;
+wire			VGA_CTRL_CLK;
 wire  [9:0]	mVGA_R;
 wire  [9:0]	mVGA_G;
 wire  [9:0]	mVGA_B;
 wire [19:0]	mVGA_ADDR;
-wire		DLY_RST;
+wire			DLY_RST;
 
 //	For VGA Controller
 wire        mVGA_CLK;
@@ -133,6 +133,7 @@ end
 // Snake moves
 reg [9:0]	length;
 reg			is_eat;
+wire 			is_queue;	 
 wire			is_end;
 
 move 
@@ -151,12 +152,14 @@ mv(
 	.y					(y_logic),
 	.length			(length),
 	.pixel_done		(pixel_done),
-	.is_end			(is_end)
+	.is_end			(is_end),
+	.is_queue		(is_queue)
 	);
 	
 // Eat apple
 wire [H_LOGIC_WIDTH - 1 : 0] appleX_logic;
 wire [V_LOGIC_WIDTH - 1 : 0] appleY_logic;
+reg 								  vld_apple;
 
 Apple 
 	#(
@@ -170,7 +173,6 @@ eat(
 	.rst				(rst),
 	.x_snake			(x_logic),
 	.y_snake			(y_logic),
-	.collision 		(0),
 	.apple 			(is_eat),
 	.appleX			(appleX_logic),
 	.appleY			(appleY_logic),
@@ -208,14 +210,14 @@ pixel
     .x          (pixel_x_logic),
     .y          (pixel_y_logic),
     .idata      (pixel_color),
-    .idata_vld  (pixel_start),
+    .idata_vld  (vld_start),
 	 .odone		 (pixel_done),
     // VGA RAM IF
     .oaddr      (addr),
     .odata      (data),
     .owren      (wren)
     );
-reg vld_apple;	 
+
 always @ (posedge clk) begin
 	if (!DLY_RST) begin
 		vld_apple <= 0;
@@ -227,6 +229,6 @@ end
 	 
 assign pixel_x_logic = (vld_apple)? appleX_logic : x_logic;
 assign pixel_y_logic = (vld_apple)? appleY_logic : y_logic;
-assign pixel_color 	= (vld_apple)? 8'h11 : (is_end)? 8'hff : 8'h0f;
+assign pixel_color 	= (vld_apple)? 8'h11 : (is_end && !is_queue)? 8'hff : 8'h0f;
 
 endmodule 

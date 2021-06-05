@@ -8,7 +8,8 @@ module move(
 	y,
 	length,
 	pixel_done,
-	is_end
+	is_end,
+	is_queue
 );
 
 parameter H_LOGIC_MAX		= 5'd31;
@@ -22,7 +23,8 @@ input [9:0]								length;
 input 									pixel_done;
 output reg [H_LOGIC_WIDTH-1:0] 	x;
 output reg [V_LOGIC_WIDTH-1:0] 	y;
-output reg is_end;
+output reg 								is_end;
+output reg 								is_queue;
 
 reg [H_LOGIC_WIDTH-1:0] 			x_logic[200];
 reg [V_LOGIC_WIDTH-1:0] 			y_logic[200];
@@ -86,7 +88,9 @@ always @(posedge clk) begin
 		 
 				x <= (i==length)? oldx_logic[i-1] : x_logic[i];
 				y <= (i==length)? oldy_logic[i-1] : y_logic[i];
-				is_end = (i==length)? 1 : 0;
+				
+				is_end	= (i==length)? 1 : 0;
+				is_queue = (x_logic[0]==x_logic[length-1] && y_logic[0]==y_logic[length-1] && length>8)? 1 : 0;
 				
 				i <= i + 1;
 			end
