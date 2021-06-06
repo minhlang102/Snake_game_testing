@@ -27,7 +27,7 @@ parameter V_PHY_MAX      	 = 9'd479;
 
 parameter COLOR_ID_WIDTH  	 = 8;
 
-input [18:0] SW;
+input			 SW;
 input        CLOCK_50;
 input  [3:0] KEY;
 output [7:0] VGA_B;
@@ -49,27 +49,32 @@ wire			DLY_RST;
 //	For VGA Controller
 wire        mVGA_CLK;
 wire  [9:0] mRed;
-wire  [9:0] mGreen;
+wire  [9:0] mGree;
 wire  [9:0] mBlue;
-wire        VGA_Read;	//	VGA data request
+wire        VGA_Rea;	//	VGA data request
 
 wire  [9:0] recon_VGA_R;
 wire  [9:0] recon_VGA_G;
 wire  [9:0] recon_VGA_B;
 
 wire clk;
-wire rst;
+reg rst=0;
+
+reg	vld_apple=0;
+wire	bite_self=0;
 
 assign clk = CLOCK_50;
-assign rst = (vld_apple && bite_self)? 1 : ~DLY_RST;
+always @ (posedge clk) begin
+	rst <= (vld_apple && bite_self)? 1 : ~DLY_RST;
+end
 
 Reset_Delay r0	(
     .iCLK(clk),
     .oRESET(DLY_RST),
-    .iRST_n(SW[0]) 	
+    .iRST_n(SW) 	
     );
 
-reg vga_clk_reg;
+reg vga_clk_reg=0;
 always @(posedge clk)
 	vga_clk_reg = !vga_clk_reg;
 
@@ -97,7 +102,7 @@ vga_controller_mod u4(
     .b_data     (VGA_B),
     .g_data     (VGA_G),
     .r_data     (VGA_R)
-    );
+    ); 
 //// Display a superpixel move left to right, top to down
 
 wire [H_LOGIC_WIDTH - 1 : 0] 	x_logic;
@@ -108,13 +113,17 @@ wire [V_PHY_WIDTH - 1 : 0]		y_physic;
 
 localparam	VLD_1HZ_CNT_MAX = 25'd24999999;
 localparam	VLD_0_5HZ_CNT_MAX = 25'd12499999;
-reg  [24:0] vld_cnt;
-wire        vld;
-wire        vld_start;
+localparam  FOR_TEST = 20'd630000;
+reg  [19:0]  vld_cnt=0;
+reg        vld=0;
+reg        vld_start=0;
 
-// Update interval time = 0.5s
-assign vld = (vld_cnt == VLD_1HZ_CNT_MAX);
-assign vld_start = (vld_cnt == 25'b0);
+// Update interval time
+always @(vld_cnt) begin
+	vld = (vld_cnt == FOR_TEST);
+	vld_start = (vld_cnt == 20'b0);
+end
+
 always @(posedge clk) begin
     if (!DLY_RST) begin
         vld_cnt <= 0;
@@ -125,16 +134,20 @@ always @(posedge clk) begin
 end
 
 // Control Snake
-reg [3:0] way;
+reg [3:0] way=1000;
 always @(negedge KEY[0], negedge KEY[1], negedge KEY[2], negedge KEY[3], posedge clk) begin
 		way<=~KEY;
 end
 
 // Snake moves
-reg [9:0]	length;
-reg			is_eat;
-wire 			is_queue;	 
+reg [9:0]	length=1;
+wire			is_eat=0;
+wire 			is_queue=0;	 
 wire			is_end;
+wire [H_LOGIC_WIDTH - 1 : 0]  pixel_x_logic;
+wire [V_LOGIC_WIDTH - 1 : 0]  pixel_y_logic;
+wire [COLOR_ID_WIDTH - 1 : 0] pixel_color;
+wire                          pixel_done;
 
 move 
 	#(
@@ -154,14 +167,13 @@ mv(
 	.pixel_done		(pixel_done),
 	.is_end			(is_end),
 	.is_queue		(is_queue),
-	.bite_self		(bite_self)
+	.bite_self		(bite_self),
+	.vld_t			(vld_t)
 	);
 	
 // Eat apple
 wire [H_LOGIC_WIDTH - 1 : 0] appleX_logic;
 wire [V_LOGIC_WIDTH - 1 : 0] appleY_logic;
-reg 								  vld_apple;
-
 Apple 
 	#(
 	.H_LOGIC_MAX	(H_LOGIC_MAX),
@@ -174,7 +186,7 @@ eat(
 	.rst				(rst),
 	.x_snake			(x_logic),
 	.y_snake			(y_logic),
-	.apple 			(is_eat),
+	.is_eat			(is_eat),
 	.appleX			(appleX_logic),
 	.appleY			(appleY_logic),
 	.length			(length)
@@ -185,12 +197,6 @@ always @ (posedge clk) begin
 		length <= length + 10'd1;
 	end
 end
-
-wire [H_LOGIC_WIDTH - 1 : 0]  pixel_x_logic;
-wire [V_LOGIC_WIDTH - 1 : 0]  pixel_y_logic;
-wire [COLOR_ID_WIDTH - 1 : 0] pixel_color;
-wire                          pixel_vld;
-wire                          pixel_done;
 
 draw_superpixel 
     #(
@@ -211,7 +217,7 @@ pixel
     .x          (pixel_x_logic),
     .y          (pixel_y_logic),
     .idata      (pixel_color),
-    .idata_vld  (vld_start),
+    .idata_vld  (pixel_vld),
 	 .odone		 (pixel_done),
     // VGA RAM IF
     .oaddr      (addr),
@@ -219,15 +225,27 @@ pixel
     .owren      (wren)
     );
 
-always @ (posedge clk) begin
-	if (rst) begin
-		vld_apple <= 0;
-	end
-	if (pixel_done && is_end) begin
-		vld_apple <= 1;
+reg pixel_done_reg;
+always @ (posedge pixel_done, posedge clk) begin
+	if (pixel_done) begin
+		pixel_done_reg <= 1;
+	end else
+	if (vld || rst || vld_apple) begin
+		pixel_done_reg <=0;
 	end
 end
 	 
+always @ (posedge clk) begin
+	if (pixel_done_reg && is_end) begin
+		vld_apple <= 1;
+	end
+	else 
+	if ((pixel_done && is_end) || rst) begin
+		vld_apple <= 0;
+	end
+end
+
+assign pixel_vld = vld_start || vld_t; 
 assign pixel_x_logic = (vld_apple)? appleX_logic : x_logic;
 assign pixel_y_logic = (vld_apple)? appleY_logic : y_logic;
 assign pixel_color 	= (vld_apple)? 8'h11 : (is_end && !is_queue)? 8'hff : 8'h0f;

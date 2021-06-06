@@ -76,6 +76,9 @@ reg                          vld_start;
 
 reg run;
 
+reg done_reg;
+wire done;
+
 always @(posedge clk) begin
     if (rst) begin
         data <= 0;
@@ -128,7 +131,6 @@ pixel2addr p2a(
     .addr   (addr)
 );
 
-reg done_reg;
 always @(posedge clk) begin
     done_reg <= (rst) ? 0 : done;
 end

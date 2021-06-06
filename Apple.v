@@ -1,7 +1,7 @@
  module Apple(
 	clk,
 	rst,
-	apple,
+	is_eat,
 	x_snake,
 	y_snake,
 	appleX,
@@ -25,19 +25,17 @@ input clk, rst;
 input [H_LOGIC_WIDTH-1:0] 	x_snake;
 input [V_LOGIC_WIDTH-1:0] 	y_snake;
 input [9:0] length;
-output apple;
-output reg [9:0] appleX;
-output reg [8:0] appleY;
+output is_eat;
+output reg [4:0] appleX;
+output reg [4:0] appleY;
 
-reg apple_inX;
-reg apple_inY;
+wire apple_t;
 reg bad_collision;
-wire [9:0]rand_X;
-wire [8:0]rand_Y;
+wire [4:0]rand_X;
+wire [4:0]rand_Y;
 wire clk1;
-reg clk2;
-reg [5:0] count;
-reg i;
+reg clk2=0;
+reg [5:0] count=0;
 localparam delay = 25;
 
 //Create clk1, clk2
@@ -50,16 +48,16 @@ always @ (posedge clk) begin
 	count <= count + 1;
 end
 
-randompoint(clk1,clk2,rand_X, rand_Y);
+randompoint rand(clk1,clk2,rand_X, rand_Y);
 
 //
 always @ (posedge clk) begin
 	if (rst) begin
-		appleX <= 15;
-		appleY <= 15;
+		appleX <= 10'd15;
+		appleY <= 9'd15;
 	end
 	else
-	if (bad_collision || apple)begin
+	if (bad_collision || apple_t)begin
 		appleX <= rand_X;
 		appleY <= rand_Y;
 	end
@@ -70,6 +68,7 @@ always @ (rand_X, rand_Y) begin
 	bad_collision = (rand_X == x_snake && rand_Y == y_snake)? 1 : 0;
 end
 
-assign apple = (x_snake == appleX && y_snake == appleY)? 1 : 0;
+assign apple_t = (x_snake == appleX && y_snake == appleY)? 1 : 0;
+assign is_eat = apple_t;
 
 endmodule

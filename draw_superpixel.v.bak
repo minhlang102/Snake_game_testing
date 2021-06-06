@@ -115,8 +115,8 @@ always @(posedge clk) begin
         wren <= 1'b1;
     end
     else if (run) begin
-        x_physic <= (x_physic == brx_physic) ? tlx_physic : x_physic + 1'b1;
-        y_physic <= (x_physic == brx_physic) ? y_physic + 1'b1 : y_physic;
+        x_physic <= (x_physic == brx_physic) ? tlx_physic : x_physic + 1'd1;
+        y_physic <= (x_physic == brx_physic) ? y_physic + 1'd1 : y_physic;
     end
 end
 
@@ -129,6 +129,7 @@ pixel2addr p2a(
 );
 
 reg done_reg;
+wire done;
 always @(posedge clk) begin
     done_reg <= (rst) ? 0 : done;
 end
