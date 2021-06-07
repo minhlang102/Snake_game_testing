@@ -113,15 +113,15 @@ wire [V_PHY_WIDTH - 1 : 0]		y_physic;
 
 localparam	VLD_1HZ_CNT_MAX = 25'd24999999;
 localparam	VLD_0_5HZ_CNT_MAX = 25'd12499999;
-localparam  FOR_TEST = 20'd630000;
-reg  [19:0]  vld_cnt=0;
+localparam  FOR_TEST = 11'd2000;
+reg  [10:0]  vld_cnt=0;
 reg        vld=0;
 reg        vld_start=0;
 
 // Update interval time
 always @(vld_cnt) begin
 	vld = (vld_cnt == FOR_TEST);
-	vld_start = (vld_cnt == 20'b0);
+	vld_start = (vld_cnt == 11'b0);
 end
 
 always @(posedge clk) begin
@@ -224,30 +224,20 @@ pixel
     .odata      (data),
     .owren      (wren)
     );
-
-reg pixel_done_reg;
-always @ (posedge pixel_done, posedge clk) begin
-	if (pixel_done) begin
-		pixel_done_reg <= 1;
-	end else
-	if (vld || rst || vld_apple) begin
-		pixel_done_reg <=0;
-	end
-end
 	 
 always @ (posedge clk) begin
-	if (pixel_done_reg && is_end) begin
+	if (pixel_done && is_end) begin
 		vld_apple <= 1;
 	end
 	else 
-	if ((pixel_done && is_end) || rst) begin
+	if (vld || rst) begin
 		vld_apple <= 0;
 	end
 end
 
-assign pixel_vld = vld_start || vld_t; 
+assign pixel_vld = vld_start || vld_t || vld_apple; 
 assign pixel_x_logic = (vld_apple)? appleX_logic : x_logic;
 assign pixel_y_logic = (vld_apple)? appleY_logic : y_logic;
-assign pixel_color 	= (vld_apple)? 8'h11 : (is_end && !is_queue)? 8'hff : 8'h0f;
+assign pixel_color 	= (vld_apple)? 8'hf9 : (is_end && !is_queue)? 8'hff : 8'h0f;
 
 endmodule 
