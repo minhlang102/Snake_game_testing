@@ -69,6 +69,6 @@ always @ (rand_X, rand_Y) begin
 end
 
 assign apple_t = (x_snake == appleX && y_snake == appleY)? 1 : 0;
-assign is_eat = apple_t;
+assign is_eat = (apple_t)? 1 : 0;
 
 endmodule

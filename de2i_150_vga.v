@@ -44,10 +44,10 @@ wire			DLY_RST;
 
 
 wire clk;
-reg rst=0;
+reg rst;
 
-reg	vld_apple=0;
-wire	bite_self=0;
+reg	vld_apple;
+wire	bite_self;
 
 assign clk = CLOCK_50;
 always @ (posedge clk) begin
@@ -98,8 +98,8 @@ localparam	VLD_1HZ_CNT_MAX = 25'd24999999;
 localparam	VLD_0_5HZ_CNT_MAX = 25'd12499999;
 localparam  FOR_TEST = 11'd2000;
 reg  [10:0]  vld_cnt=0;
-reg        vld=0;
-reg        vld_start=0;
+reg        vld;
+reg        vld_start;
 
 // Update interval time
 always @(vld_cnt) begin
@@ -117,15 +117,15 @@ always @(posedge clk) begin
 end
 
 // Control Snake
-reg [3:0] way=1000;
+reg [3:0] way;
 always @(negedge KEY[0], negedge KEY[1], negedge KEY[2], negedge KEY[3], posedge clk) begin
 		way<=~KEY;
 end
 
 // Snake moves
-reg [9:0]	length=1;
-wire			is_eat=0;
-wire 			is_queue=0;	 
+reg [9:0]	length;
+wire			is_eat;
+wire 			is_queue;	 
 wire			is_end;
 wire [H_LOGIC_WIDTH - 1 : 0]  pixel_x_logic;
 wire [V_LOGIC_WIDTH - 1 : 0]  pixel_y_logic;
@@ -176,6 +176,9 @@ eat(
 	);
 
 always @ (posedge clk) begin
+	if (rst) begin
+		length <= 10'd1;
+	end else
 	if (is_eat) begin
 		length <= length + 10'd1;
 	end
