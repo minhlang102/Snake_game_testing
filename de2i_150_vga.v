@@ -40,22 +40,8 @@ output       VGA_SYNC_N;
 output       VGA_VS;
 
 wire			VGA_CTRL_CLK;
-wire  [9:0]	mVGA_R;
-wire  [9:0]	mVGA_G;
-wire  [9:0]	mVGA_B;
-wire [19:0]	mVGA_ADDR;
 wire			DLY_RST;
 
-//	For VGA Controller
-wire        mVGA_CLK;
-wire  [9:0] mRed;
-wire  [9:0] mGree;
-wire  [9:0] mBlue;
-wire        VGA_Rea;	//	VGA data request
-
-wire  [9:0] recon_VGA_R;
-wire  [9:0] recon_VGA_G;
-wire  [9:0] recon_VGA_B;
 
 wire clk;
 reg rst=0;
@@ -107,9 +93,6 @@ vga_controller_mod u4(
 
 wire [H_LOGIC_WIDTH - 1 : 0] 	x_logic;
 wire [V_LOGIC_WIDTH - 1 : 0] 	y_logic;
-
-wire [H_PHY_WIDTH - 1 : 0]		x_physic;
-wire [V_PHY_WIDTH - 1 : 0]		y_physic;
 
 localparam	VLD_1HZ_CNT_MAX = 25'd24999999;
 localparam	VLD_0_5HZ_CNT_MAX = 25'd12499999;
