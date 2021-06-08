@@ -9,7 +9,7 @@ always @(posedge clk1 )begin
 		  end
 end
 always @(posedge clk2)begin
-   randomY = randomY + 8;
+   randomY = randomY + 7;
 	if ( randomY >= 23)begin
 	     randomY = 10;
 		  end

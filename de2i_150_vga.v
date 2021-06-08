@@ -167,12 +167,18 @@ Apple
 eat(
 	.clk				(clk),
 	.rst				(rst),
-	.x_snake			(x_logic),
-	.y_snake			(y_logic),
+	.x_snake_cur	(x_logic),
+	.y_snake_cur	(y_logic),
 	.is_eat			(is_eat),
 	.appleX			(appleX_logic),
 	.appleY			(appleY_logic),
-	.length			(length)
+	.length			(length),
+	.is_end			(is_end),
+	.pixel_done		(pixel_done),
+	.vld				(vld),
+	.vld_start		(vld_start),
+	.vld_t			(vld_t),
+	.good				(is_good)
 	);
 
 always @ (posedge clk) begin
@@ -210,16 +216,13 @@ pixel
     .odata      (data),
     .owren      (wren)
     );
-	 
+
 always @ (posedge clk) begin
-	if (pixel_done && is_end) begin
-		vld_apple <= 1;
-	end
-	else 
 	if (vld || rst) begin
 		vld_apple <= 0;
-	end
-end
+	end else
+		vld_apple <= is_good;
+end 
 
 assign pixel_vld = vld_start || vld_t || vld_apple; 
 assign pixel_x_logic = (vld_apple)? appleX_logic : x_logic;

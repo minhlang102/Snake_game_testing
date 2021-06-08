@@ -46,61 +46,61 @@ end
 //Snake's head
 always @(posedge clk) begin
     if (rst) begin
-			is_end <= 0;
-			is_queue <= 0;
-			i <= 1;
-			x_logic[0] <= 0;
+			is_end = 0;
+			is_queue = 0;
+			i = 1;
+			x_logic[0] = 5'd1;
 			y_logic[0] <= 0;
-			oldx_logic[0] <= 0;
-			oldy_logic[0] <= 0;
-			x <= 0;
-			y <= 0;
+			oldx_logic[0] = 0;
+			oldy_logic[0] = 0;
+			x = 1;
+			y = 0;
     end
     else if (vld && !bite_self) begin
-			i <= 1;
-			is_end <= 0;
+			i = 1;
+			is_end = 0;
+			oldx_logic[0] = x_logic[0];
+			oldy_logic[0] = y_logic[0];
 			//RIGHT
 			if (way==4'b1000) begin
-				x_logic[0] <= (x_logic[0] == H_LOGIC_MAX) ? 0 : x_logic[0] + 1'b1;
-				y_logic[0] <= y_logic[0];
+				x_logic[0] = (x_logic[0] == H_LOGIC_MAX) ? 0 : x_logic[0] + 1'b1;
+				y_logic[0]= y_logic[0];
 			end
 			else
 			//LEFT
 			if (way==4'b0100) begin
-				x_logic[0] <= (x_logic[0] == 0) ? H_LOGIC_MAX : x_logic[0] - 1'b1;
-				y_logic[0] <= y_logic[0];
+				x_logic[0] = (x_logic[0] == 0) ? H_LOGIC_MAX : x_logic[0] - 1'b1;
+				y_logic[0] = y_logic[0];
 			end
 			else
 			//UP				
 			if (way==4'b0010) begin
-				x_logic[0] <= x_logic[0];
-				y_logic[0] <= (y_logic[0] == 0) ? V_LOGIC_MAX : y_logic[0] - 1'b1;
+				x_logic[0] = x_logic[0];
+				y_logic[0] = (y_logic[0] == 0) ? V_LOGIC_MAX : y_logic[0] - 1'b1;
 			end
 			else
 			//DOWN		
 			if (way==4'b0001) begin
-				x_logic[0] <= x_logic[0];					
-				y_logic[0] <= (y_logic[0] == V_LOGIC_MAX) ? 0 : y_logic[0] + 1'b1;
+				x_logic[0] = x_logic[0];					
+				y_logic[0] = (y_logic[0] == V_LOGIC_MAX) ? 0 : y_logic[0] + 1'b1;
 			end
-			oldx_logic[0] <= x_logic[0];
-			oldy_logic[0] <= y_logic[0];
-			x <= x_logic[0];
-			y <= y_logic[0];
+			x = x_logic[0];
+			y = y_logic[0];
     end else
 //Snake's body
 			if (vld_t_reg) begin
-				oldx_logic[i] <= x_logic[i];
-				oldy_logic[i] <= y_logic[i];
-				x_logic[i] <= oldx_logic[i-1];
-				y_logic[i] <= oldy_logic[i-1];
+				oldx_logic[i] = x_logic[i];
+				oldy_logic[i] = y_logic[i];
+				x_logic[i] = oldx_logic[i-1];
+				y_logic[i] = oldy_logic[i-1];
 				
-				x <= (i==length)? oldx_logic[i-1] : x_logic[i];
-				y <= (i==length)? oldy_logic[i-1] : y_logic[i];
+				x = (i==length)? oldx_logic[i-1] : x_logic[i];
+				y = (i==length)? oldy_logic[i-1] : y_logic[i];
 				
 				is_end	 = (i==length)? 1 : 0;
 				is_queue  = (x_logic[0]==x_logic[length-1] && y_logic[0]==y_logic[length-1] && length>3)? 1 : 0;
 				
-				i <= i + 1;
+				i = i + 1;
 			end
 end
 
