@@ -41,7 +41,6 @@ output reg [4:0] 				appleX;
 output reg [4:0] 				appleY;
 output reg						good;
 
-reg [4:0]						X, Y;
 reg 								bad_collision;
 reg								vld_check;
 reg								is_eat_reg;
