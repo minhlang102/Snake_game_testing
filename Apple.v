@@ -44,8 +44,6 @@ output reg						good;
 reg 								bad_collision;
 reg								vld_check;
 reg								is_eat_reg;
-reg [H_LOGIC_WIDTH-1:0] 	x_head;
-reg [V_LOGIC_WIDTH-1:0] 	y_head;
 wire [4:0]						rand_X;
 wire [4:0]						rand_Y;
 wire 								clk1;
@@ -90,8 +88,6 @@ always @ (posedge clk) begin
 		y_snake[i] <= y_snake_cur;
 		i<=i+10'd1;
 	end
-	x_head <= x_snake[0];
-	y_head <= y_snake[0];
 end
 //
 always @ (posedge clk) begin
