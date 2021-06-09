@@ -41,6 +41,7 @@ output reg [4:0] 				appleX;
 output reg [4:0] 				appleY;
 output reg						good;
 
+reg [4:0]						X, Y;
 reg 								bad_collision;
 reg								vld_check;
 reg								is_eat_reg;
@@ -49,19 +50,12 @@ wire [4:0]						rand_Y;
 wire 								clk1;
 reg 								clk2=0;
 reg [5:0] 						count=0;
-localparam 						delay = 3; 
-reg [H_LOGIC_WIDTH-1:0] 	x_snake[200:0];
-reg [V_LOGIC_WIDTH-1:0] 	y_snake[200:0];
+localparam 						delay = 3'd3; 
 reg [200:0] collision;
 reg [9:0] i;
 reg [9:0] j;
-reg vld_assign;
 //Create clk1, clk2
 assign clk1 = clk;
-always @ (posedge clk) begin
-	if (vld) vld_assign <= 1;
-	if (rst || vld_t) vld_assign <= 0;
-end
 
 always @ (posedge clk) begin
 	if (count == delay*2) count <= 0;
@@ -73,33 +67,47 @@ end
 randompoint rand(clk1,clk2,rand_X, rand_Y);
 
 //Assign x_snake, y_snake
-
-always @ (posedge clk) begin
-	if (rst || vld_start) begin
-		i<=0;
-		j<=0;
-	end
-	if (rst && vld_start) begin
-		x_snake[0] <= x_snake_cur;
-		y_snake[0] <= y_snake_cur;
-	end else
-	if (i<length && vld_assign) begin
-		x_snake[i] <= x_snake_cur;
-		y_snake[i] <= y_snake_cur;
-		i<=i+10'd1;
-	end
+always @ (posedge vld_start, posedge vld_t, posedge rst) begin
+	if (rst) begin
+		x_snake[0] = x_snake_cur;
+		y_snake[0] = y_snake_cur;
+	end else	
+	if (!is_end) begin	
+		x_snake[i] = x_snake_cur;
+		y_snake[i] = y_snake_cur;
+	end	
 end
 //
 always @ (posedge clk) begin
 	if (rst) begin
 		appleX <= 10'd3;
 		appleY <= 9'd0;
+	end else
+	if (rst || vld) begin
+		i<=0;
+		j<=0;
+	end else
+	if ((vld || pixel_done) && !is_end) begin
+		i<=i+1;
 	end
 end
 
 always @ (posedge bad_collision ,posedge is_eat_reg) begin
-	appleX <= rand_X;
-	appleY <= rand_Y;
+//FOR TEST
+	/*if (length==1) begin
+		appleX <= 5'd4;
+		appleY <= 5'd0;
+	end else
+	if (length==2) begin
+		appleX <= 5'd3;
+		appleY <= 5'd0;
+	end else
+		appleX <= rand_X;
+		appleY <= 5'd0;*/
+		
+		appleX <= rand_X;
+		appleY <= rand_Y;
+		
 end
 
 //Check conditions
@@ -116,30 +124,35 @@ always @ (posedge clk) begin
 	if (vld || rst) begin
 		is_eat_reg <= 0;
 		bad_collision <= 0;
-		collision <= 0;
 	end else
 	if (x_snake[0]==appleX && y_snake[0]==appleY && vld_check) begin	
 		is_eat_reg <= 1;
 	end else is_eat_reg <=0;
 end
 
-always @ (appleX, appleY) begin
-	if (vld_check) begin
+always @ (posedge clk) begin
+	if (rst || bad_collision) collision <= 201'd0;
+	if ((vld_check && is_eat)) begin
 		for (j=0; j<length; j=j+1) begin
 			collision[j] <= (x_snake[j]==appleX && y_snake[j]==appleY);
 		end
 	end
 end
 
-always @ (collision, is_eat_reg) begin
-	bad_collision = &collision;
+always @ (is_eat_reg) begin
 	is_eat <= is_eat_reg;
 end
 
+always @ (collision) begin
+	bad_collision = |collision;
+end
+
 always @ (posedge clk) begin
+	if (is_eat) begin
+		if (!bad_collision) good <= 1;
+	end else
 	if (rst || vld) good <= 0;
-	else if (!bad_collision && vld_check) 
-		good <= 1;
+	else if (vld_check) good <= 1;
 end
 
 endmodule
