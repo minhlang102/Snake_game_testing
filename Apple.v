@@ -49,6 +49,8 @@ wire [4:0]						rand_Y;
 wire 								clk1;
 reg 								clk2=0;
 reg [5:0] 						count=0;
+reg [H_LOGIC_WIDTH-1:0] 	x_snake[200:0];
+reg [V_LOGIC_WIDTH-1:0] 	y_snake[200:0];
 localparam 						delay = 3'd3; 
 reg [200:0] collision;
 reg [9:0] i;
@@ -146,12 +148,16 @@ always @ (collision) begin
 	bad_collision = |collision;
 end
 
+reg temp;
 always @ (posedge clk) begin
-	if (is_eat) begin
-		if (!bad_collision) good <= 1;
-	end else
-	if (rst || vld) good <= 0;
-	else if (vld_check) good <= 1;
+	if (rst || vld) temp<=0;
+	if (is_eat) temp<=1;
+end
+
+always @ (posedge clk) begin
+	if (rst || vld) good<=0;
+	if (temp && !bad_collision) good<=1;
+	else good<=0;
 end
 
 endmodule
