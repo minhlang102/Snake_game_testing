@@ -36,12 +36,14 @@ reg [H_LOGIC_WIDTH-1:0]	   		oldx_logic[200:0];
 reg [V_LOGIC_WIDTH-1:0] 			oldy_logic[200:0];
 reg										vld_t_reg;
 reg [9:0] 								i;
+reg [3:0]								oldway;
 wire										bite_self_vld;
 
 always @(posedge clk) begin
 	 if (!vld && pixel_done && i<length+1) begin
 		vld_t_reg <= 1;
 	 end else vld_t_reg <= 0;
+	 oldway <= way;
 end  
 //Snake's head
 always @(posedge clk) begin
@@ -62,25 +64,25 @@ always @(posedge clk) begin
 			oldx_logic[0] = x_logic[0];
 			oldy_logic[0] = y_logic[0];
 			//RIGHT
-			if (way==4'b1000) begin
+			if (way==4'b1000 && oldway!=4'b0100) begin
 				x_logic[0] = (x_logic[0] == H_LOGIC_MAX) ? 0 : x_logic[0] + 1'b1;
 				y_logic[0]= y_logic[0];
 			end
 			else
 			//LEFT
-			if (way==4'b0100) begin
+			if (way==4'b0100 && oldway!=4'b1000) begin
 				x_logic[0] = (x_logic[0] == 0) ? H_LOGIC_MAX : x_logic[0] - 1'b1;
 				y_logic[0] = y_logic[0];
 			end
 			else
 			//UP				
-			if (way==4'b0010) begin
+			if (way==4'b0010 && oldway!=4'b0001) begin
 				x_logic[0] = x_logic[0];
 				y_logic[0] = (y_logic[0] == 0) ? V_LOGIC_MAX : y_logic[0] - 1'b1;
 			end
 			else
 			//DOWN		
-			if (way==4'b0001) begin
+			if (way==4'b0001 && oldway!=4'b0010) begin
 				x_logic[0] = x_logic[0];					
 				y_logic[0] = (y_logic[0] == V_LOGIC_MAX) ? 0 : y_logic[0] + 1'b1;
 			end
@@ -104,7 +106,7 @@ always @(posedge clk) begin
 			end
 end
 
-assign bite_self_vld = (x_logic[0]==x_logic[i] && y_logic[0]==y_logic[i] && length>5  && i!=length )? 1 : 0;
+assign bite_self_vld = (x_logic[0]==x_logic[i] && y_logic[0]==y_logic[i] && length>4  && i!=length )? 1 : 0;
 always @ (posedge clk) begin
 	vld_t <= vld_t_reg;
 end
