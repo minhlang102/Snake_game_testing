@@ -95,7 +95,7 @@ end
 
 always @ (posedge bad_collision ,posedge is_eat_reg) begin
 //FOR TEST
-	/*if (length==1) begin
+	if (length==1) begin
 		appleX <= 5'd4;
 		appleY <= 5'd0;
 	end else
@@ -104,10 +104,10 @@ always @ (posedge bad_collision ,posedge is_eat_reg) begin
 		appleY <= 5'd0;
 	end else
 		appleX <= rand_X;
-		appleY <= 5'd0;*/
-		
-		appleX <= rand_X;
-		appleY <= rand_Y;
+		appleY <= 5'd0;
+//ORIGINAL
+		/*appleX <= rand_X;
+		appleY <= rand_Y;*/
 		
 end
 

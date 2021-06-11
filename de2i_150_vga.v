@@ -8,8 +8,10 @@ module de2i_150_vga(
     VGA_G,
     VGA_HS,
     VGA_R,
-    VGA_SYNC_N,
-    VGA_VS
+    VGA_VS,
+	 LED1,
+	 LED2,
+	 LED3
 );
 
 parameter VGA_ADDR_WIDTH    = 19;
@@ -36,8 +38,10 @@ output       VGA_CLK;
 output [7:0] VGA_G;
 output       VGA_HS;
 output [7:0] VGA_R;
-output       VGA_SYNC_N;
 output       VGA_VS;
+output [6:0] LED1;
+output [6:0] LED2;
+output [6:0] LED3;
 
 wire			VGA_CTRL_CLK;
 wire			DLY_RST;
@@ -189,7 +193,15 @@ always @ (posedge clk) begin
 		length <= length + 10'd1;
 	end
 end
-
+//Point
+point_snake point(
+.clock 	(clk),
+.reset 	(rst),
+.length 	(length),
+.LED1 	(LED1),
+.LED2		(LED2),
+.LED3 	(LED3) 
+);
 draw_superpixel 
     #(
     .SPIXEL_X_WIDTH    (H_LOGIC_WIDTH),
